@@ -20,7 +20,7 @@ from .ingestion.snapshots import select_snapshots
 from .models.market import predict_market
 
 
-def observed_tables(entry_dir: Path, odds_dir: Path, prediction_at: str):
+def observed_tables(entry_dir: Path, odds_dir: Path, prediction_at: str, confirmation_dir=None):
     cutoff = timestamp(prediction_at, "prediction_at")
     entries_capture, odds_capture = verify_capture(entry_dir), verify_capture(odds_dir)
     require(entries_capture["manifest"]["dataspec"] == "0B15", "Entries require 0B15")
@@ -34,10 +34,26 @@ def observed_tables(entry_dir: Path, odds_dir: Path, prediction_at: str):
     odds_records = [decode_o1(r["payload"]) for r in odds_capture["records"]]
     # Fail closed until other sale/status policies have been explicitly implemented.
     require(all(r["data_status"] == "1" for r in odds_records), "Only intermediate odds supported")
-    audit_mapping(records, odds_records)
+    confirmation_records = None
+    confirmation_hash = None
+    if confirmation_dir is not None:
+        confirmation = verify_capture(confirmation_dir)
+        require(confirmation['manifest']['dataspec'] == '0B15' and
+                confirmation['manifest']['race_key'] == entries_capture['manifest']['race_key'],
+                'Confirmation must capture the same race via 0B15')
+        require(entries_capture['finished_at'] < confirmation['started_at'] and
+                confirmation['finished_at'] <= cutoff, 'Confirmation outside observation window')
+        confirmation_records = [decode_race_record(r['payload']) for r in confirmation['records']]
+        require(sorted(r['payload_sha256'] for r in records) ==
+                sorted(r['payload_sha256'] for r in confirmation_records),
+                'Entries changed between captures; acquire a new coherent pair')
+        confirmation_hash = confirmation['manifest_sha256']
+    audit_mapping(records, odds_records, confirmation_records=confirmation_records)
     race = next(r for r in records if r["record_id"] == "RA")
     horses = [r for r in records if r["record_id"] == "SE"]
-    require(race["runner_count"] == len(horses), "Withdrawals or unconfirmed field unsupported")
+    # RA field 47 is an actual post-race count, initialized to zero in status 2.
+    # Use RA registration count + SE identities + O1 active count for the pre-race field.
+    require(race["runner_count"] == 0, "Pre-race RA actual runner count must be unpopulated")
     require(all(r["abnormal_code_raw"] == "0" and r["final_rank_raw"] in {"00", "  "}
                 for r in horses), "Abnormal or result-bearing entry record")
     race_day = datetime.strptime(race["race_key"][:8], "%Y%m%d").date()
@@ -55,7 +71,7 @@ def observed_tables(entry_dir: Path, odds_dir: Path, prediction_at: str):
     entries = pd.DataFrame([dict(race_id=race["race_key"], horse_id=r["horse_id"],
                                  horse_number=r["horse_number"]) for r in horses])
     horse_ids = {r["horse_number"]: r["horse_id"] for r in horses}
-    rows = []
+    rows, prepared = [], []
     for record, captured in zip(odds_records, odds_capture["records"], strict=True):
         announced = record["announcement_mmddhhmm_raw"]
         candidates = []
@@ -70,6 +86,12 @@ def observed_tables(entry_dir: Path, odds_dir: Path, prediction_at: str):
                 "Odds timestamp is after observation or scheduled start")
         require(timestamp(record["created_date"] + "T00:00:00+09:00") <= captured["retrieved_at"],
                 "Odds creation date is in the future")
+        prepared.append((announced_at, record, captured))
+    # Choose by timestamp, never by quote quality; an invalid newest snapshot fails.
+    latest = max(item[0] for item in prepared)
+    for announced_at, record, captured in prepared:
+        if announced_at != latest:
+            continue
         require(record["runner_count"] == len(horses) and record["win_sale_flag"] == "7",
                 "Unsupported runner count or win sale state")
         for slot in record["slots"]:
@@ -83,6 +105,9 @@ def observed_tables(entry_dir: Path, odds_dir: Path, prediction_at: str):
                              evidence_id=odds_capture["manifest_sha256"], odds_kind="pre_race",
                              win_odds=slot["win_odds"], popularity=slot["popularity_raw"]))
     provenance = dict(entries_manifest_sha256=entry_evidence,
+                      raw_odds_records=len(odds_records),
+                      selected_announcement_at=latest.isoformat(),
+                      confirmation_manifest_sha256=confirmation_hash,
                       odds_manifest_sha256=odds_capture["manifest_sha256"],
                       capture_manifest_verified=True, availability_mode="observed",
                       availability_meaning="local observation upper bound, not publication time",
@@ -92,14 +117,14 @@ def observed_tables(entry_dir: Path, odds_dir: Path, prediction_at: str):
     return races, entries, pd.DataFrame(rows), provenance
 
 
-def run(entry_dir: Path, odds_dir: Path, output_dir: Path, prediction_at: str) -> dict:
+def run(entry_dir: Path, odds_dir: Path, output_dir: Path, prediction_at: str, confirmation_dir=None) -> dict:
     output_dir.mkdir(parents=True, exist_ok=False)
     status = dict(status="RUNNING", experiment_kind="observed_market_diagnostic")
     status_path = output_dir / "status.json"
     try:
         require(timestamp(prediction_at) <= pd.Timestamp.now(tz="UTC"),
                 "Prediction cutoff cannot be in the future at execution")
-        races, entries, odds, provenance = observed_tables(entry_dir, odds_dir, prediction_at)
+        races, entries, odds, provenance = observed_tables(entry_dir, odds_dir, prediction_at, confirmation_dir)
         selected = select_snapshots(races, entries, odds, availability_mode="observed")
         predictions = predict_market(selected)
         for name, table in [("races", races), ("entries", entries), ("odds", odds),
@@ -129,8 +154,10 @@ def main():
     parser.add_argument("--odds-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--prediction-at", required=True)
+    parser.add_argument("--entries-confirmation-dir", type=Path)
     args = parser.parse_args()
-    print(json.dumps(run(args.entries_dir, args.odds_dir, args.output_dir, args.prediction_at)))
+    print(json.dumps(run(args.entries_dir, args.odds_dir, args.output_dir, args.prediction_at,
+                         args.entries_confirmation_dir)))
 
 
 if __name__ == "__main__":

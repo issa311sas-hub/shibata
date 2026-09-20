@@ -55,7 +55,7 @@ def decode_race_record(payload: bytes) -> dict:
     return record
 
 
-def audit_mapping(records: list[dict], odds: list[dict]) -> dict:
+def audit_mapping(records: list[dict], odds: list[dict], *, confirmation_records=None) -> dict:
     """Check a single revision/field. Explicitly exclude this audit from predictions."""
     races = [r for r in records if r["record_id"] == "RA"]
     horses = [r for r in records if r["record_id"] == "SE"]
@@ -63,9 +63,14 @@ def audit_mapping(records: list[dict], odds: list[dict]) -> dict:
     race = races[0]
     require(bool(odds), "No O1 records")
     require(all(r["race_key"] == race["race_key"] for r in horses + odds), "Race mismatch")
-    require(all(r["data_status"] == race["data_status"] and
-                r["created_date"] == race["created_date"] for r in horses),
+    require(all(r["data_status"] == race["data_status"] for r in horses),
             "Inconsistent RA/SE revisions")
+    dates_match = all(r["created_date"] == race["created_date"] for r in horses)
+    if not dates_match:
+        require(confirmation_records is not None and
+                sorted(r['payload_sha256'] for r in records) ==
+                sorted(r['payload_sha256'] for r in confirmation_records),
+                "Different creation dates require an identical independent recapture")
     require(len(horses) == race["registered_count"], "Incomplete horse field")
     numbers = {r["horse_number"] for r in horses}
     require(len(numbers) == len(horses) and len({r["horse_id"] for r in horses}) == len(horses),
@@ -84,6 +89,7 @@ def audit_mapping(records: list[dict], odds: list[dict]) -> dict:
                 "Invalid complete result ranking")
     return dict(race_key=race["race_key"], horse_count=len(horses),
                 odds_records_checked=len(odds), mapping_consistent=True,
+                creation_dates_match=dates_match,
                 complete_normal_result=normal_result, prediction_ready=False,
                 unresolved=["pre_race_entry_availability_evidence", "odds_availability_evidence",
                             "result_settlement_timestamp"],

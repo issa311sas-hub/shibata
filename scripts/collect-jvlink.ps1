@@ -43,6 +43,6 @@ finally {
   }
   $probe.finished_at=[DateTimeOffset]::UtcNow.ToString('o')
   $probe | ConvertTo-Json -Depth 4 | Set-Content -Encoding utf8 (Join-Path $probeOutput 'probe.json')
-  $probe | Select-Object dataspec,race_key,records,complete,init_code,open_code,close_code,error | ConvertTo-Json
+  [pscustomobject]$probe | Select-Object dataspec,race_key,records,complete,init_code,open_code,close_code,error | ConvertTo-Json
 }
 if ($probe.error -or $probe.close_error -or -not $probe.complete) { exit 1 }

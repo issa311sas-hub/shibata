@@ -34,6 +34,8 @@ def inputs(tmp_path, *, entry_status=b'2', quote=b'0020', announcement=b'0115114
     for kind, number in [('RA', 1), ('SE', 1), ('SE', 2)]:
         payload = bytearray(fixture(kind, number))
         payload[2:3] = entry_status
+        if kind == 'RA' and entry_status == b'2':
+            payload[883:885] = b'00'
         if kind == 'SE':
             payload[334:336] = b'00'
         entries.append(bytes(payload))
@@ -158,3 +160,62 @@ def test_new_year_announcement_uses_previous_year(tmp_path):
         save_manifest(folder, m)
     _, _, odds, _ = observed_tables(e, o, '2025-01-01T10:01:00+09:00')
     assert odds.iloc[0].odds_at == pd.Timestamp('2024-12-31T20:00:00+09:00')
+
+
+def rewrite_record(folder, index, change):
+    m = json.loads((folder / 'probe.json').read_text(encoding='utf-8-sig'))
+    item = m['files'][index]
+    p = folder / item['file']
+    payload = bytearray(p.read_bytes())
+    change(payload)
+    p.write_bytes(payload)
+    item['sha256'] = hashlib.sha256(payload).hexdigest()
+    save_manifest(folder, m)
+
+
+@pytest.mark.parametrize('variant', ['none', 'stable', 'changed', 'overlap', 'late'])
+def test_creation_date_mismatch_requires_stable_timely_confirmation(tmp_path, variant):
+    e, o = inputs(tmp_path)
+    rewrite_record(e, 1, lambda p: p.__setitem__(slice(3, 11), b'20240114'))
+    confirmation = None
+    if variant != 'none':
+        confirmation = tmp_path / 'confirmation'
+        at = {'overlap': '2024-01-15T11:45:00+09:00',
+              'late': '2024-01-15T11:51:00+09:00'}.get(variant, '2024-01-15T11:46:00+09:00')
+        capture(confirmation, '0B15', [p.read_bytes() for p in sorted(e.glob('*.bin'))], at=at)
+        if variant == 'changed':
+            rewrite_record(confirmation, 1, lambda p: p.__setitem__(slice(30, 40), b'0000000003'))
+    if variant == 'stable':
+        *_, provenance = observed_tables(e, o, '2024-01-15T11:50:00+09:00', confirmation)
+        assert provenance['confirmation_manifest_sha256']
+    else:
+        with pytest.raises(DataError):
+            observed_tables(e, o, '2024-01-15T11:50:00+09:00', confirmation)
+
+
+def test_post_race_runner_count_rejected_in_racecard(tmp_path):
+    e, o = inputs(tmp_path)
+    rewrite_record(e, 0, lambda p: p.__setitem__(slice(883, 885), b'02'))
+    with pytest.raises(DataError, match='unpopulated'):
+        observed_tables(e, o, '2024-01-15T11:50:00+09:00')
+
+
+@pytest.mark.parametrize('newest_invalid', [False, True])
+def test_choose_latest_before_quote_validation_and_never_fallback(tmp_path, newest_invalid):
+    e, o = inputs(tmp_path)
+    first = bytearray((o / 'record-0000.bin').read_bytes())
+    latest = bytearray(first)
+    first[27:35] = b'01151139'
+    if newest_invalid:
+        latest[45:49] = b'0000'
+    else:
+        first[45:49] = b'0000'
+    history = tmp_path / 'history'
+    capture(history, '0B41', [bytes(first), bytes(latest)])
+    if newest_invalid:
+        with pytest.raises(DataError, match='unquoted'):
+            run(e, history, tmp_path / 'output', '2024-01-15T11:50:00+09:00')
+    else:
+        report = run(e, history, tmp_path / 'output', '2024-01-15T11:50:00+09:00')
+        assert report['raw_odds_records'] == 2
+        assert pd.read_csv(tmp_path / 'output' / 'odds.csv').snapshot_id.unique().tolist() == ['record-0001.bin']

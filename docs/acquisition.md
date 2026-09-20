@@ -56,3 +56,16 @@ O1の発表時刻の年は自動補完しない。出力は常にprediction_read
 8. 実データの期間・欠損・公表時刻を確認した後、Phase判定と評価期間を確定する。
 
 無料体験を開始するための導入・規約同意は、このオフライン作業には含まれない。
+
+## バイト配列取得とRA/SE監査（2026-09-21追加）
+
+JVRead文字列を再符号化する試験方式では日本語を含むSEのバイト位置が崩れたため、以降の小規模取得にはJVGetsを使う。64bit JV-Linkが導入済みのPowerShellで実行する。出力先は毎回新規にする。既存のprobe系スクリプトは診断用であり再利用しない。
+
+```powershell
+./scripts/collect-jvlink.ps1 -DataSpec 0B15 -RaceKey 2026092006040608 -OutputDirectory data/raw/example-new-capture
+.venv/Scripts/python.exe -m shibata.ingestion.jv_race --race-dir data/raw/entries-bytes-20260921 --odds-dir data/raw/connection-check-20260921 --output data/raw/entries-bytes-20260921/audit-new.json
+```
+
+例の過去レースは提供期間内でのみ取得可能。監査はRA/SEの限定列とO1単勝部分を対象とし、HRを含む他種別は解析しない。取消・同着等を通常の教師ラベルへ自動変換しない。EOFだけでは同時点の一貫した応答と認定しない。時刻証拠とmanifestの照合は別途必要。
+
+参考: [公式JV-Data仕様書](https://jra-van.jp/dlb/sdv/sdk/JV-Data4901.pdf)、[公式0B15整合性に関する回答](https://developer.jra-van.jp/t/topic/1035)、[JVGetsの公式導入説明](https://jra-van.jp/dlb/sdv/ml/20041020a.html)。

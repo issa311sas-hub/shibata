@@ -63,9 +63,9 @@ JVRead文字列を再符号化する試験方式では日本語を含むSEのバ
 
 ```powershell
 ./scripts/collect-jvlink.ps1 -DataSpec 0B15 -RaceKey 2026092006040608 -OutputDirectory data/raw/example-new-capture
-.venv/Scripts/python.exe -m shibata.ingestion.jv_race --race-dir data/raw/entries-bytes-20260921 --odds-dir data/raw/connection-check-20260921 --output data/raw/entries-bytes-20260921/audit-new.json
+.venv/Scripts/python.exe -m shibata.ingestion.jv_race --race-dir data/raw/entries-bytes-20260921 --odds-dir data/raw/verified-20260921-nakayama08-odds --output data/raw/entries-bytes-20260921/audit-new.json
 ```
 
-例の過去レースは提供期間内でのみ取得可能。監査はRA/SEの限定列とO1単勝部分を対象とし、HRを含む他種別は解析しない。取消・同着等を通常の教師ラベルへ自動変換しない。EOFだけでは同時点の一貫した応答と認定しない。時刻証拠とmanifestの照合は別途必要。
+例の過去レースは提供期間内でのみ取得可能。監査はRA/SEの限定列とO1単勝部分を対象とし、HRを含む他種別は解析しない。取消・同着等を通常の教師ラベルへ自動変換しない。EOFだけでは同時点の一貫した応答と認定しない。manifest照合は監査CLIで必須となった。公開時刻の証拠確認は別途必要。
 
 参考: [公式JV-Data仕様書](https://jra-van.jp/dlb/sdv/sdk/JV-Data4901.pdf)、[公式0B15整合性に関する回答](https://developer.jra-van.jp/t/topic/1035)、[JVGetsの公式導入説明](https://jra-van.jp/dlb/sdv/ml/20041020a.html)。

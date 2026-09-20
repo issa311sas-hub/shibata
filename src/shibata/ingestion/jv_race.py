@@ -96,23 +96,29 @@ def main():
     import json
     from pathlib import Path
     from .jv_o1 import decode_o1
+    from .capture import verify_capture
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--race-dir', type=Path, required=True)
     parser.add_argument('--odds-dir', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
+    race_capture = verify_capture(args.race_dir)
+    odds_capture = verify_capture(args.odds_dir)
+    require(race_capture['manifest']['dataspec'] in {'0B12', '0B15'}, 'Expected race capture')
+    require(odds_capture['manifest']['dataspec'] == '0B41', 'Expected odds capture')
     records, unparsed = [], []
-    for path in sorted(args.race_dir.glob('record-*.bin')):
-        payload = path.read_bytes()
+    for captured in race_capture['records']:
+        payload = captured['payload']
         if payload[:2] in (b'RA', b'SE'):
             records.append(decode_race_record(payload))
         else:
-            unparsed.append({'file': path.name, 'sha256': hashlib.sha256(payload).hexdigest()})
-    odds = [decode_o1(p.read_bytes()) for p in sorted(args.odds_dir.glob('record-*.bin'))]
+            unparsed.append({'file': captured['file'], 'sha256': captured['sha256']})
+    odds = [decode_o1(r['payload']) for r in odds_capture['records']]
     report = audit_mapping(records, odds)
     report['record_hashes'] = [r['payload_sha256'] for r in records + odds]
     report['unparsed_records'] = unparsed
-    report['capture_manifest_verified'] = False
+    report['capture_manifest_verified'] = True
+    report['manifest_hashes'] = [race_capture['manifest_sha256'], odds_capture['manifest_sha256']]
     with args.output.open('x', encoding='utf-8') as stream:
         json.dump(report, stream, indent=2)
     print(json.dumps({k: v for k, v in report.items() if k != 'record_hashes'}))

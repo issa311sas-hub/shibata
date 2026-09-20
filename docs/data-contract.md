@@ -84,3 +84,5 @@ result_statusは現在officialのみ。settled_atは発走後・レース内共�
 形式検証は捏造された時刻や誤った出走表を見破るものではない。
 evidence_idは原本を指す識別子であり、自動で外部資料を取得・検証する機能はない。
 古いオッズをどこまで許容するか、締切後の取消、発走変更、同着・返還は実データ受入れ前に方針を確定する。
+
+観測した確定結果の評価は[saved-evaluation.md](saved-evaluation.md)を参照。観測結果はresult_observed_atを使い、上記resultsのsettled_atへ取得時刻を詐称しない。指標の式は共通だが、時刻の意味は分離する。

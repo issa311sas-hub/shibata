@@ -8,15 +8,31 @@ from shibata.ingestion.contracts import require, validate_table
 
 def evaluate(predictions: pd.DataFrame, results: pd.DataFrame) -> tuple[dict, dict]:
     results = validate_table(results, "results")
+    return _score(predictions, results, "settled_at")
+
+
+def evaluate_observed_results(predictions: pd.DataFrame, results: pd.DataFrame) -> tuple[dict, dict]:
+    """Score confirmed labels using observation time, without inventing settlement time."""
+    require("result_observed_at" in results and "settled_at" not in results,
+            "Observed results require result_observed_at, not settled_at")
+    # Reuse label/schema validation only; retain the distinct temporal meaning.
+    checked = validate_table(results.rename(columns={"result_observed_at": "settled_at"}), "results")
+    checked = checked.rename(columns={"settled_at": "result_observed_at"})
+    metrics, tables = _score(predictions, checked, "result_observed_at")
+    metrics["result_time_basis"] = "local observation of confirmed result; exact settlement time unknown"
+    return metrics, tables
+
+
+def _score(predictions: pd.DataFrame, results: pd.DataFrame, time_column: str) -> tuple[dict, dict]:
     require(not predictions.empty, "Empty predictions")
     require(not predictions.duplicated(["race_id", "horse_id"]).any(), "Duplicate predictions")
     key = ["race_id", "horse_id"]
     require(set(map(tuple, predictions[key].to_numpy())) ==
             set(map(tuple, results[key].to_numpy())), "Prediction/result keys must match exactly")
     scored = predictions.merge(results, on=key, validate="one_to_one")
-    require((scored.settled_at > scored.start_at).all(), "Results settled before race start")
-    require((scored.groupby("race_id").settled_at.nunique() == 1).all(),
-            "Inconsistent result settlement times")
+    require((scored[time_column] > scored.start_at).all(), "Results settled before race start or observed too early")
+    require((scored.groupby("race_id")[time_column].nunique() == 1).all(),
+            "Inconsistent result settlement times or observation times")
     p = scored.market_probability.to_numpy(dtype=float)
     y = scored.win.to_numpy(dtype=float)
     require(np.isfinite(p).all() and ((p > 0) & (p < 1)).all(),

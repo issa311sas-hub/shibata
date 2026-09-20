@@ -16,3 +16,7 @@ outputs/
 *.log
 .DS_Store
 Thumbs.db
+*.egg-info/
+build/
+dist/
+work/

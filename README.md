@@ -11,12 +11,22 @@ https://github.com/issa311sas-hub/shibata
 - [開発・学習計画書（ユーザー提供の原文）](docs/development-plan.md)
 - [開発記録](docs/progress.md)
 - [実験記録テンプレート](docs/experiment-template.md)
+- [環境構築・演習の実行手順](docs/setup.md)
+- [データ取得元の調査と受入れ確認事項](docs/data-sources.md)
 - [AI作業ルール](AGENTS.md)
 
 ## 現在の状態
 
-記録用リポジトリの初期化を完了。Phase 0のPython環境構築、データ取得、モデル実装・学習・評価は未着手です。
-次の作業は、データ提供元・利用条件・取得可能な時刻情報を確認し、再現可能な開発環境を準備することです。
+Phase 0に着手。Python 3.12の専用環境、依存関係の固定、CSV／Parquet・SQL・時系列処理の合成データ演習を実装し、4件のテストが通過しました。
+実データは未取得で、モデル実装・学習・未知期間評価は未着手です。Phase 0全体の完了判定は保留しています。
+次の作業は、利用できるデータまたはData Lab.契約状況を確認し、実データの小規模な取得・品質確認を行うことです。
+
+セットアップ後、次のコマンドで確認できます。
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m shibata.phase0
+```
 
 ## 基本方針
 

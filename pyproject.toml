@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shibata"
+version = "0.1.0"
+description = "Reproducible JRA win probability research"
+requires-python = ">=3.12,<3.13"
+dependencies = ["numpy==2.2.6", "pandas==2.2.3", "pyarrow==20.0.0"]
+
+[project.optional-dependencies]
+dev = ["pytest==8.3.5"]
+
+[project.scripts]
+shibata-check = "shibata.phase0:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

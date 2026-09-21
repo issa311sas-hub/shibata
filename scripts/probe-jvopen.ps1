@@ -1,4 +1,4 @@
-﻿# Bounded diagnostic of the accumulated-data interface; never exports training rows.
+# Bounded diagnostic of the accumulated-data interface; never exports training rows.
 param([Parameter(Mandatory)][ValidatePattern('^[0-9]{14}-[0-9]{14}$')][string]$FromTime,
       [Parameter(Mandatory)][string]$OutputPath,
       [switch]$Capture)
@@ -22,12 +22,12 @@ try {
   $report.last_file_timestamp=$lastTimestamp
   $report.total_read_kb=$jv.m_TotalReadFilesize
   if ($Capture -and $report.open_code -eq 0) {
-    if ($readCount -gt 20 -or $report.total_read_kb -gt 10240) { throw 'Capture exceeds 20 files or 10 MiB' }
+    if ($readCount -gt 30 -or $report.total_read_kb -gt 16384) { throw 'Capture exceeds 30 files or 16 MiB' }
     $folder=[IO.Path]::GetFullPath($OutputPath)+'.records'
     New-Item -ItemType Directory -Path $folder -ErrorAction Stop | Out-Null
     $report.records=@(); $report.complete=$false
     $timer=[Diagnostics.Stopwatch]::StartNew()
-    while ($timer.Elapsed.TotalSeconds -lt 90 -and $report.records.Count -lt 5000) {
+    while ($timer.Elapsed.TotalSeconds -lt 90 -and $report.records.Count -lt 20000) {
       [object]$buffer=[byte[]]::new(110000); $filename=''
       $code=$jv.JVGets([ref]$buffer,110000,[ref]$filename)
       if ($code -eq 0) { $report.complete=$true; break }
@@ -56,3 +56,4 @@ finally {
   [pscustomobject]$report | Select-Object dataspec,fromtime,open_code,read_count,total_read_kb,complete,error,close_code | ConvertTo-Json
 }
 if ($report.error -or $report.close_error) { exit 1 }
+

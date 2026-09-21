@@ -23,7 +23,7 @@ def verify(path):
         begin,end=timestamp(manifest['started_at']),timestamp(manifest['finished_at'])
         require(begin<=end,'Capture time order invalid')
         records=manifest['records']
-        require(isinstance(records,list) and 0<len(records)<=5000,'Invalid record count')
+        require(isinstance(records,list) and 0<len(records)<=20000,'Invalid record count')
         folder=Path(str(path)+'.records')
         require(not folder.is_symlink(),'Capture directory must not be a symlink')
         names={f'record-{i:04d}.bin' for i in range(len(records))}
@@ -95,3 +95,4 @@ def main():
 
 
 if __name__=='__main__': main()
+

@@ -1,0 +1,20 @@
+{
+  "experiment_id": "logistic-initial-v1",
+  "status": "APPROVED_PREPARATION",
+  "approved_on": "2026-09-21",
+  "timezone": "Asia/Tokyo",
+  "train": {"start": "2025-10-01", "end_inclusive": "2026-06-30"},
+  "validation": {"start": "2026-07-01", "end_inclusive": "2026-08-31"},
+  "test": {"start": "2026-09-01", "end_inclusive": "2026-09-13"},
+  "model": "logistic_regression",
+  "features": ["age", "sex", "bracket_number", "horse_number", "runner_count", "distance", "surface", "venue", "carried_weight"],
+  "race_scope": "JRA flat",
+  "split_unit": "whole_race_by_race_date",
+  "test_use": "final_evaluation_only_no_model_selection",
+  "prior_test_access": "2026-09-12/13 result records were inspected for integrity, identity, rank completeness and exceptional outcome codes before this approval; no model trained or tuned on them.",
+  "availability_review_required": true,
+  "data_coverage_verified": false,
+  "training_enabled": false,
+  "phase_promotion": false,
+  "note": "Approved preparation and experiment scope. Enable training only after source coverage, feature availability and phase gates are verified. Final odds are not pre-race inputs."
+}

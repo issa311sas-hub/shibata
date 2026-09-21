@@ -1,0 +1,19 @@
+{
+  "experiment_id": "market-observed-pilot-v1",
+  "status": "DRAFT_NOT_ADOPTED",
+  "execution_enabled": false,
+  "timezone": "Asia/Tokyo",
+  "observation_dates": ["2026-09-26", "2026-09-27", "2026-10-03", "2026-10-04"],
+  "scope": "JRA flat races, all venues on the listed dates",
+  "cutoff_minutes_before_scheduled_start": 10,
+  "max_odds_age_minutes_at_cutoff": 5,
+  "prediction_save_deadline_minutes_after_cutoff": 1,
+  "train_period": null,
+  "validation_period": null,
+  "test_period": null,
+  "model": "normalized_inverse_win_odds",
+  "metric_definition_version": "v1",
+  "roi_enabled": false,
+  "scheduler_created": false,
+  "policy_enforcement_implemented": false
+}

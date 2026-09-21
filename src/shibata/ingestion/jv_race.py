@@ -43,7 +43,7 @@ def decode_race_record(payload: bytes) -> dict:
         start = field(873, 877)
         require(start.isdigit() and int(start[:2]) < 24 and int(start[2:]) < 60,
                 "Invalid scheduled start time")
-        record.update(start_hhmm_raw=start, registered_count=number(881, 883, 2, 18),
+        record.update(start_hhmm_raw=start, track_code_raw=field(705, 707), registered_count=number(881, 883, 2, 18),
                       runner_count=number(883, 885, 0, 18))
         require(record["runner_count"] <= record["registered_count"], "Invalid runner count")
     else:

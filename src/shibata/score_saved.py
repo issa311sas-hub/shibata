@@ -15,6 +15,10 @@ from .ingestion.contracts import DataError, require, timestamp, validate_table
 from .ingestion.jv_race import decode_race_record
 
 
+def now_utc():
+    return pd.Timestamp.now(tz='UTC')
+
+
 def load_saved(folder: Path, expected_status_sha256: str):
     """Pin status to a previously recorded hash and verify bytes before parsing."""
     raw = (folder / 'status.json').read_bytes()
@@ -61,7 +65,7 @@ def result_labels(result_dir: Path, predictions: pd.DataFrame):
     captured = verify_capture(result_dir)
     require(captured['manifest']['dataspec'] == '0B12', 'Results require a separate 0B12 capture')
     require(captured['started_at'] > predictions.start_at.max(), 'Result capture began before race start')
-    require(captured['finished_at'] <= pd.Timestamp.now(tz='UTC'), 'Result capture is in the future')
+    require(captured['finished_at'] <= now_utc(), 'Result capture is in the future')
     parsed = []
     unparsed = []
     for record in captured['records']:
@@ -116,7 +120,7 @@ def run(prediction_dir: Path, expected_status_sha256: str, result_dir: Path, out
             table.to_csv(output_dir / f'{name}.csv', index=False)
         status.update(status='PASS', race_id=saved['race_id'], **evidence,
                       prediction_sha256=saved['output_sha256']['predictions.csv'],
-                      evaluated_at=pd.Timestamp.now(tz='UTC').isoformat(),
+                      evaluated_at=now_utc().isoformat(),
                       scope='single-race diagnostic; no model selection or phase promotion')
         status['output_sha256'] = {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
                                   for p in sorted(output_dir.iterdir())}

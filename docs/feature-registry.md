@@ -17,3 +17,10 @@ Phase 0のprevious_win / previous_two_meanは操作演習であり、本番特�
 観測入力の追加経路（2026-09-21）: 上記の式・意味は変更せず、RA/SE/O1の正常値から内部形式へ接続するobserved CLIを追加した。取得manifestの検証と保守的なローカル取得時刻を条件にする。合成のバイト列から市場確率までの結合テストに成功。実観測の正常オッズがまだ揃わないため、実データ性能・欠損率・採用判定は引き続き保留。手順・対応範囲はobserved-workflow.md。
 
 2026-09-21追記: 阪神1Rの8頭について、発走前実観測からwin_odds/popularity/runner_count/odds_rank/market_probabilityの生成に成功。計算式は不変。runner_countは発走前のRA登録頭数・SE集合・O1頭数を照合し、RAの結果用出走頭数は使わない。実験observed-20260921-hanshin01-v3、出力再現性を確認。1レースの計算確認であり、精度・採否は結果評価待ち。
+
+
+2026-09-21 承認済みpilot-v1: win_odds/popularityの情報締切を予定発走10分前、発表からの経過5分以内とする条件をユーザー承認に基づき追加。既存の早朝診断は別枠で保持し、式・モデル・学習期間は不変。実際の保存も締切後1分以内を検査する。
+
+| feature_name | category | description | formula | raw_source | available_time | missing_rate | leakage_risk | hypothesis | implemented | validation_result | keep_or_drop | notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| track_code_raw | eligibility_metadata | 平地/障害の対象区分確認 | RA項番36の原コード | RA 706バイト目から2バイト | 締切以前に取得したRA | 未計測 | 後日版を対象選定に使わない | 承認された平地のみを含める | 対象検査のみ実装 | 合成データの平地/障害検査 | ML特徴量には不採用 | 出力確率の計算には不使用 |

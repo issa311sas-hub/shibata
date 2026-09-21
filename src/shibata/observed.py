@@ -20,6 +20,10 @@ from .ingestion.snapshots import select_snapshots
 from .models.market import predict_market
 
 
+def now_utc():
+    return pd.Timestamp.now(tz='UTC')
+
+
 def observed_tables(entry_dir: Path, odds_dir: Path, prediction_at: str, confirmation_dir=None):
     cutoff = timestamp(prediction_at, "prediction_at")
     entries_capture, odds_capture = verify_capture(entry_dir), verify_capture(odds_dir)
@@ -104,7 +108,7 @@ def observed_tables(entry_dir: Path, odds_dir: Path, prediction_at: str, confirm
                              available_at=captured["retrieved_at"], retrieved_at=captured["retrieved_at"],
                              evidence_id=odds_capture["manifest_sha256"], odds_kind="pre_race",
                              win_odds=slot["win_odds"], popularity=slot["popularity_raw"]))
-    provenance = dict(entries_manifest_sha256=entry_evidence,
+    provenance = dict(track_code_raw=race["track_code_raw"], entries_manifest_sha256=entry_evidence,
                       raw_odds_records=len(odds_records),
                       selected_announcement_at=latest.isoformat(),
                       confirmation_manifest_sha256=confirmation_hash,
@@ -117,20 +121,34 @@ def observed_tables(entry_dir: Path, odds_dir: Path, prediction_at: str, confirm
     return races, entries, pd.DataFrame(rows), provenance
 
 
-def run(entry_dir: Path, odds_dir: Path, output_dir: Path, prediction_at: str, confirmation_dir=None) -> dict:
+def run(entry_dir: Path, odds_dir: Path, output_dir: Path, prediction_at: str, confirmation_dir=None, policy_path=None, planned_race=None) -> dict:
     output_dir.mkdir(parents=True, exist_ok=False)
     status = dict(status="RUNNING", experiment_kind="observed_market_diagnostic")
     status_path = output_dir / "status.json"
     try:
-        require(timestamp(prediction_at) <= pd.Timestamp.now(tz="UTC"),
+        require(timestamp(prediction_at) <= now_utc(),
                 "Prediction cutoff cannot be in the future at execution")
         races, entries, odds, provenance = observed_tables(entry_dir, odds_dir, prediction_at, confirmation_dir)
+        if policy_path is not None:
+            from .pilot_policy import load_policy, validate_window, validate_save_time
+            policy, policy_hash = load_policy(policy_path)
+            validate_window(races.iloc[0].start_at, prediction_at, odds.odds_at, provenance['track_code_raw'])
+            if planned_race is not None:
+                require(races.iloc[0].race_id == planned_race['race_id'] and
+                        races.iloc[0].start_at == timestamp(planned_race['start_at']) and
+                        provenance['track_code_raw'] == planned_race['track_code'],
+                        'Race differs from frozen roster')
+            validate_save_time(prediction_at, now_utc())
+            provenance.update(pilot_policy_sha256=policy_hash, pilot_experiment_id=policy['experiment_id'],
+                              cutoff_policy='approved pilot: 10 minutes before start', fixed_cutoff_verified=True)
         selected = select_snapshots(races, entries, odds, availability_mode="observed")
         predictions = predict_market(selected)
         for name, table in [("races", races), ("entries", entries), ("odds", odds),
                             ("predictions", predictions)]:
             table.to_csv(output_dir / f"{name}.csv", index=False)
-        generated = pd.Timestamp.now(tz="UTC")
+        generated = now_utc()
+        if policy_path is not None:
+            validate_save_time(prediction_at, generated)
         status.update(status="PASS", race_id=races.iloc[0].race_id, horse_count=len(predictions),
                       generated_at=generated.isoformat(),
                       generated_before_scheduled_start=bool(generated < races.iloc[0].start_at),
@@ -140,6 +158,8 @@ def run(entry_dir: Path, odds_dir: Path, output_dir: Path, prediction_at: str, c
         package = Path(__file__).resolve().parent
         status["code_sha256"] = {str(p.relative_to(package)): hashlib.sha256(p.read_bytes()).hexdigest()
                                  for p in sorted(package.rglob("*.py"))}
+        if policy_path is not None:
+            validate_save_time(prediction_at, now_utc())
     except (DataError, OSError, ValueError) as exc:
         status.update(status="FAILED", error=str(exc))
         raise
@@ -155,9 +175,10 @@ def main():
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--prediction-at", required=True)
     parser.add_argument("--entries-confirmation-dir", type=Path)
+    parser.add_argument("--policy", type=Path)
     args = parser.parse_args()
     print(json.dumps(run(args.entries_dir, args.odds_dir, args.output_dir, args.prediction_at,
-                         args.entries_confirmation_dir)))
+                         args.entries_confirmation_dir, args.policy)))
 
 
 if __name__ == "__main__":

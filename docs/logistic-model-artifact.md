@@ -7,3 +7,13 @@ models/logistic_artifact.pyは学習済み前処理と回帰係数をJSONに保�
 読込時は呼出側が保持するモデルSHA256と照合し、列順・形式・次元・有限値・正の標準偏差・カテゴリ重複を検査する。予測対象で前処理を再学習しない。元の二値確率とレース内合計1の確率を出す。
 
 テストで学習→保存→読込→未知カテゴリを含む予測を実行し、scikit-learn版の出力と相対誤差1e-12で一致を確認した。実競馬での学習済みモデルはまだ作成していない。設定・データセットのハッシュは識別用であり、それ自体でデータの利用時点や品質を証明しない。上位のデータ審査が別途必要。
+
+## 合成データによる一括接続確認
+
+```powershell
+.venv/Scripts/python.exe -m shibata.logistic_rehearsal --output outputs/<新規実行ID>
+```
+
+このコマンドはコード内の合成3レースだけを使用する。承認済み期間に従ってTrain2レース・Validation1レースに分け、前処理・学習・JSONモデル保存・ハッシュ照合・再読込予測・市場比較・表保存まで実行する。Testには標本を作らず評価しない。実競馬データの学習や精度の主張に使わない。
+
+status.jsonにsynthetic_integration_rehearsal、real_data_used=false、test_evaluated=false、phase_promotion=falseを記録。すべての出力ハッシュを保存する。既存出力先は拒否する。途中失敗はFAILEDとして記録する。

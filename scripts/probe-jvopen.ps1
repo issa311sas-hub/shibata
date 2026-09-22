@@ -22,7 +22,7 @@ try {
   $report.last_file_timestamp=$lastTimestamp
   $report.total_read_kb=$jv.m_TotalReadFilesize
   if ($Capture -and $report.open_code -eq 0) {
-    if ($readCount -gt 30 -or $report.total_read_kb -gt 16384) { throw 'Capture exceeds 30 files or 16 MiB' }
+    if ($readCount -gt 30 -or $report.total_read_kb -gt 24576) { throw 'Capture exceeds 30 files or 24 MiB' }
     $folder=[IO.Path]::GetFullPath($OutputPath)+'.records'
     New-Item -ItemType Directory -Path $folder -ErrorAction Stop | Out-Null
     $report.records=@(); $report.complete=$false

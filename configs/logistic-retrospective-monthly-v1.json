@@ -1,0 +1,56 @@
+{
+  "experiment_id": "logistic-retrospective-monthly-v1",
+  "experiment_kind": "retrospective_reference",
+  "status": "APPROVED_REFERENCE_EXPERIMENT",
+  "approved_on": "2026-09-22",
+  "approval": "参考実験として進めて良い",
+  "timezone": "Asia/Tokyo",
+  "train": {
+    "start": "2025-10-01",
+    "end_inclusive": "2026-06-30"
+  },
+  "validation": {
+    "start": "2026-07-01",
+    "end_inclusive": "2026-08-31"
+  },
+  "test": {
+    "start": "2026-09-01",
+    "end_inclusive": "2026-09-13"
+  },
+  "model": "logistic_regression",
+  "features": [
+    "age",
+    "sex",
+    "bracket_number",
+    "horse_number",
+    "runner_count",
+    "distance",
+    "surface",
+    "venue",
+    "carried_weight"
+  ],
+  "race_scope": "JRA flat",
+  "split_unit": "whole_race_by_race_date",
+  "test_use": "locked_not_loaded_by_reference_development",
+  "prior_test_access": "2026-09-12/13 result records were inspected for integrity, identity, rank completeness and exceptional outcome codes before period approval; no model trained or tuned on them.",
+  "reference_training_enabled": true,
+  "training_enabled": false,
+  "phase_promotion": false,
+  "pre_race_availability_verified": false,
+  "full_period_coverage_verified": false,
+  "reconstruction_policy": "Final RA/SE status 7; complete normal field, no dead heats or recorded distance/track/weight changes. Missing inputs excluded, never zero-filled. Outcome-dependent selection bias remains.",
+  "market_policy": "Final O1 status 5 only as descriptive benchmark, never a model feature or T-10 observation. Capped/missing odds excluded.",
+  "note": "Same approved periods and nine features. Reference experiment does not relax strict observed-pilot gates. Initial run uses explicitly listed partial captures.",
+  "sampling": "Existing October and July weekend samples plus second-Monday releases for remaining months; incomplete convenience sample, not full-period coverage",
+  "additional_release_days": [
+    "20251110",
+    "20251208",
+    "20260112",
+    "20260209",
+    "20260309",
+    "20260413",
+    "20260511",
+    "20260608",
+    "20260810"
+  ]
+}

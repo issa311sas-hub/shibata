@@ -4,7 +4,7 @@
 
 Windows 64bit / Python 3.12。今回の実行環境は3.12.14。
 Phase 0ではNumPy・pandas・PyArrow・pytestを導入する。
-matplotlib・scikit-learn・LightGBM・CatBoost・Jupyterは、利用するPhaseで検証して追加する。
+scikit-learn 1.7.2は承認済み参考実験のため追加済み。matplotlib・LightGBM・CatBoost・Jupyterは未導入。原計画のPhase 0の学習項目にも挙がっているため、最小演習と導入範囲を[Phase 0完了監査](phase0-completion-audit.md)の残タスクとして整理した。
 
 ## セットアップ
 

@@ -16,6 +16,8 @@ https://github.com/issa311sas-hub/shibata
 - [Phase 0完了記録・検証結果](docs/phase0-completion.md)
 - [Phase 0最小演習ガイド](docs/phase0-learning-guide.md)
 - [Phase 1の完了条件と残タスク](docs/phase1-completion-audit.md)
+- [Phase 1の全期間集計手順](docs/phase1-summary-operations.md)
+- [Phase 1の終了報告テンプレート](docs/phase1-report-template.md)
 - [過去成績を使う参考実験](docs/retrospective-experiment.md)
 - [データ取得元の調査と受入れ確認事項](docs/data-sources.md)
 - [契約なしで実行できるオフライン処理](docs/offline-workflow.md)
@@ -58,4 +60,4 @@ https://github.com/issa311sas-hub/shibata
 
 保存済み予測を変更せずに結果で評価する手順: [保存済み予測の結果評価](docs/saved-evaluation.md)。
 
-承認済みの発走10分前試験: [パイロット運用手順](docs/pilot-operations.md)。固定締切・鮮度検査と全対象台帳を実装済み。自動起動は未設定。
+承認済みの発走10分前試験: [パイロット運用手順](docs/pilot-operations.md)。固定締切・鮮度検査と全対象台帳を実装済み。毎日9時・17時の定期確認を設定済みで、当日の取得はローカルrunnerの起動と稼働確認が必要です。

@@ -1,0 +1,66 @@
+{
+  "experiment_id": "phase0-acceptance-20260923",
+  "date": "2026-09-23",
+  "scope": "Development environment and basic operations only",
+  "decision": "PASS",
+  "real_racing_performance_claim": false,
+  "gates": {
+    "DATA": "PASS",
+    "LEAKAGE": "PASS",
+    "CODE": "PASS",
+    "TEST": "PASS",
+    "VALIDATION": "PASS",
+    "DOCUMENTATION": "PASS"
+  },
+  "validation_scope": "Later synthetic 2025-04..06 period; independent expected values and four causal boundaries; not racing performance",
+  "python": "3.12.14",
+  "packages": {
+    "numpy": "2.2.6",
+    "pandas": "2.2.3",
+    "pyarrow": "20.0.0",
+    "matplotlib": "3.10.6",
+    "scikit-learn": "1.7.2",
+    "lightgbm": "4.6.0",
+    "catboost": "1.2.8",
+    "jupyterlab": "4.4.9",
+    "nbclient": "0.10.2",
+    "nbformat": "5.10.4",
+    "ipykernel": "6.30.1",
+    "pytest": "8.3.5"
+  },
+  "tests": {
+    "tests": 227,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fixed_dependency_count": 115,
+  "requirements_sha256": "115ddd70a82649f328b2333a1ddf61ac97030f09dd7c9defd747a4cf4cb8eb76",
+  "operation_source_sha256": "a4171fd16823d3936020784dff21360f4098b1061a5d00e2f83076c86d2b9ecc",
+  "matching_artifacts": [
+    "later-period.csv",
+    "later-period.parquet",
+    "history.png",
+    "basics\\synthetic.csv",
+    "basics\\synthetic.parquet",
+    "basics\\exercise.parquet"
+  ],
+  "library_probability_comparison": "allclose rtol=1e-12",
+  "notebook_cells_per_environment": 5,
+  "evidence_files": {
+    "outputs\\phase0-completion-build-v2\\report.json": "be9228ea15010e1eb67f9c811546a79a87287c2bf0415cb3d824220e07f53194",
+    "outputs\\phase0-completion-replay-v2\\acceptance\\report.json": "15f463dbe7e66b809b7984bbf07015921f5d41b39c7d5a0dfc4f51f77207ed3a",
+    "outputs\\phase0-completion-replay-v2\\clean-environment.json": "9ef1856ecff8c181b6dc866d25c0f0cd3311431570ab6f13a14185a53c9a922f",
+    "outputs\\phase0-completion-replay-v2\\pytest.xml": "436db68fa67f85a83e635333a434f9bf5cb810b4576862668a36626c6a83fd12"
+  },
+  "clean_installation_evidence": "outputs/phase0-completion-replay-v1/install.log",
+  "retry_reason": "Initial shared pytest temp/cache directories returned WinError 5; verification rerun in isolated output directories without reinstalling or changing dependencies",
+  "documentation": [
+    "docs/phase0-completion.md",
+    "docs/phase0-completion-audit.md",
+    "docs/phase0-learning-guide.md",
+    "docs/setup.md",
+    "docs/feature-registry.md",
+    "docs/progress.md"
+  ]
+}

@@ -415,3 +415,17 @@ RA/SE成績から9項目のみ復元し、ラベルと確定市場比較値を�
 Phase 0について計画書第3章と第24章、実装、テスト、環境を照合。演習CLIをoutputs/phase0-audit-20260922へ再実行し、CSV/Parquet往復とSQL集計一致PASS、pip check成功を確認。matplotlib、Jupyter、LightGBM、CatBoostは未導入だった。既存環境の動作は確認したが、新規venvからの再構築と全学習項目の演習は未確認。
 
 docs/phase0-completion-audit.mdへ、完了済みの証拠、優先順付き残タスク、6項目の適用案、Phase 0に追加しない後続作業をまとめた。第24章の未知期間評価を操作検証として扱う案は提案に留め、原計画の改変・N/A化・Phase完了宣言はしていない。READMEとsetupの古い現状説明も更新。今後は新規モデルの拡張よりPhase 0の整理を優先する。承認済みの開催日観測の定期確認は維持する。
+
+## 2026-09-23 — Phase 0を開発環境・基本操作の範囲で完了
+
+ユーザーの完了作業指示に従い、第3章の目的に沿って6項目の対象を定義し、すべて実行確認した。原計画本文は変更せず、VALIDATIONは元の開発演習とは別の後続合成期間に対する操作検証と明記。実競馬の性能・利用時点検証をPASS扱いにしない。
+
+変更対象: Phase 0用の固定依存とoptional dependencies、後続期間の期待値・因果検査、図・学習ライブラリ・Notebookの受入CLI、再構築スクリプト、教材・終了記録。理由: 学習項目の不足と新規環境の再現確認を解消するため。元のphase0.py、実競馬の特徴量・期間・モデル条件・指標は変更なし。
+
+matplotlib 3.10.6、LightGBM 4.6.0、CatBoost 1.2.8、JupyterLab 4.4.9等を専用venvへ導入し、全115依存を固定。別の新規venvをその固定ファイルから構築しpip check成功。既存の.venvには依存を追加していない。
+
+新規環境の最初のpytestは共有一時フォルダpytest-of-nuzoyと既存キャッシュへのWinError 5で152セットアップエラー、テスト失敗判定0。単一のI/Oテストでも再現した。既存フォルダや権限は変更せず、新規出力先の一時領域・キャッシュを指定する最小修正で全227件が成功（59.48秒）。失敗ログを保存し、再現スクリプトへ修正を反映。
+
+受入CLIは初期環境・再構築環境ともPASS。CSV/Parquet/SQL、2025-04〜06の架空3頭4レース12行の手指定期待値、4時点の未来情報不変性、Notebook5セル、3学習ライブラリの人工入力fit/predictを確認。図を目視確認。外部KernelManagerの既定終了処理に起因する警告は同梱コードから原因を特定し、cleanup_kc=True指定後の実行で解消。
+
+実行IDはphase0-acceptance-20260923。証拠はdocs/phase0-completion.mdとphase0-completion-evidence.json、ローカルoutputs/phase0-completion-build-v2およびphase0-completion-replay-v1/v2に保存。DATA / LEAKAGE / CODE / TEST / VALIDATION / DOCUMENTATIONすべてPhase 0の対象範囲でPASS。ユーザー本人の習熟度・実競馬性能は未認定。次はPhase 1の市場ベースライン検証。観測の承認条件と定期確認は維持する。

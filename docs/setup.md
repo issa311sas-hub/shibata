@@ -4,7 +4,7 @@
 
 Windows 64bit / Python 3.12。今回の実行環境は3.12.14。
 Phase 0ではNumPy・pandas・PyArrow・pytestを導入する。
-scikit-learn 1.7.2は承認済み参考実験のため追加済み。matplotlib・LightGBM・CatBoost・Jupyterは未導入。原計画のPhase 0の学習項目にも挙がっているため、最小演習と導入範囲を[Phase 0完了監査](phase0-completion-audit.md)の残タスクとして整理した。
+scikit-learn 1.7.2は基本環境にも導入済み。Phase 0の学習項目を確認する専用環境は、matplotlib 3.10.6・LightGBM 4.6.0・CatBoost 1.2.8・JupyterLab 4.4.9等をrequirements-phase0-lock.txtに固定する。基本環境の依存を無条件に増やさず、別venvで再現確認する。
 
 ## セットアップ
 
@@ -39,6 +39,8 @@ requirements-lock.txtはWindows / Python 3.12で検証した直接・間接依�
 
 ## 学習時に読む順番
 
+[最小演習ガイド](phase0-learning-guide.md)とnotebooks/phase0-foundations.ipynbを併用する。Notebookは出力なしの教材をGitへ保存し、実行済みコピーはローカルoutputsへ保存する。
+
 src/shibata/phase0.pyのmake_example → exercise_operations → runを読む。
 DataFrame、groupby、merge、shift、rollingの役割を実行結果と照合する。
 過去成績のない馬の値と、2走目以降の値の違いを確認する。
@@ -51,3 +53,25 @@ DataFrame、groupby、merge、shift、rollingの役割を実行結果と照合�
 
 続いて、契約なしで進めるよう依頼された範囲として市場ベースラインのオフライン予行を追加した。
 [offline-workflow.md](offline-workflow.md)を参照。実データのPhase完了判定や機械学習への移行とは区別する。
+
+## Phase 0を空の環境から確認する
+
+リポジトリ直下、Windows 64bit / Python 3.12で実行する。下記の環境名と出力先は毎回新しくする。-Pythonには利用可能なPython 3.12の実行ファイルを指定できる。
+
+```powershell
+./scripts/check-phase0.ps1 -Python .venv/Scripts/python.exe -EnvironmentDirectory work/phase0-replay-next -OutputDirectory outputs/phase0-replay-next
+```
+
+固定した全依存115件を新しいvenvへインストールし、プロジェクトのeditable install、pip check、全pytest、Phase 0受入CLIを順に実行する。初回はネットワーク接続が必要。カーネルは同じvenvのPythonを明示して起動し、Notebook内の実行ファイル表示とも照合する。
+
+outputs配下のclean-environment.jsonが全体の成否。失敗時はinstall.log、project-install.log、pip-check.log、pytest.log、acceptance.logとacceptance/report.jsonを確認する。レポートにstatus=PASSがあることを確認し、終了コードだけで判断しない。
+
+受入処理はCSV/Parquet往復、SQL照合、2025年の後続合成標本の期待値と4つの時点境界、図の生成、3ライブラリの最小学習・確率出力、Notebook全セル実行を確認する。乱数種は0、LightGBM/CatBoostは単一スレッド。利用者の理解や実競馬の予測性能を自動認定するものではない。
+
+導入済みの専用環境で処理だけ再実行する場合:
+
+```powershell
+work/phase0-replay/Scripts/python.exe -m shibata.phase0_completion --output outputs/phase0-acceptance-next
+```
+
+Notebookを手元で操作する場合のみ、同環境でpython -m jupyterlab notebooks/phase0-foundations.ipynbを起動する。自動検証ではブラウザや常駐Jupyterサーバーは起動しない。

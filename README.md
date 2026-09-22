@@ -13,6 +13,8 @@ https://github.com/issa311sas-hub/shibata
 - [実験記録テンプレート](docs/experiment-template.md)
 - [環境構築・演習の実行手順](docs/setup.md)
 - [Phase 0の完了条件と残タスク](docs/phase0-completion-audit.md)
+- [Phase 0完了記録・検証結果](docs/phase0-completion.md)
+- [Phase 0最小演習ガイド](docs/phase0-learning-guide.md)
 - [過去成績を使う参考実験](docs/retrospective-experiment.md)
 - [データ取得元の調査と受入れ確認事項](docs/data-sources.md)
 - [契約なしで実行できるオフライン処理](docs/offline-workflow.md)
@@ -24,11 +26,11 @@ https://github.com/issa311sas-hub/shibata
 
 ## 現在の状態
 
-2026-09-22時点。Phase 0の基本操作・CSV/Parquet・SQL演習は再実行成功。全225テストが通過しています。JV-Linkによる取得、原本ハッシュ照合、発走前の保存済み市場予測と結果評価も実装済みです。
+2026-09-23時点。Phase 0（開発環境・基本操作）は6項目PASSで完了。固定依存から再構築した新規venvで全227テスト、後続合成期間の操作検証、Notebook全5セル、可視化、3学習ライブラリの動作確認が成功しました。実競馬の予測性能を認定したものではありません。
 
 ユーザー承認の参考実験として、過去成績を復元した9特徴量で実データの学習・検証を実行しました。初回は41レース575頭で学習、後の65レース805頭で検証。発走前の利用時点は未証明で、Test評価・Phase完了の認定には使いません。詳細は参考実験記録を参照してください。
 
-現在はユーザー指示により追加開発を一区切りとし、Phase 0の終了判定・新規環境での再現性・学習項目の不足を整理しています。具体的な残タスクと証拠はPhase 0完了監査に集約しました。正式なPhase完了判定は保留です。
+次はPhase 1の実競馬市場ベースライン検証です。JV-Link取得・原本照合・保存済み予測の結果評価は実装済みで、承認済みの締切付き観測試験は引き続き実施対象です。
 
 セットアップ後、次のコマンドで確認できます。
 

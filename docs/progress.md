@@ -429,3 +429,11 @@ matplotlib 3.10.6、LightGBM 4.6.0、CatBoost 1.2.8、JupyterLab 4.4.9等を専�
 受入CLIは初期環境・再構築環境ともPASS。CSV/Parquet/SQL、2025-04〜06の架空3頭4レース12行の手指定期待値、4時点の未来情報不変性、Notebook5セル、3学習ライブラリの人工入力fit/predictを確認。図を目視確認。外部KernelManagerの既定終了処理に起因する警告は同梱コードから原因を特定し、cleanup_kc=True指定後の実行で解消。
 
 実行IDはphase0-acceptance-20260923。証拠はdocs/phase0-completion.mdとphase0-completion-evidence.json、ローカルoutputs/phase0-completion-build-v2およびphase0-completion-replay-v1/v2に保存。DATA / LEAKAGE / CODE / TEST / VALIDATION / DOCUMENTATIONすべてPhase 0の対象範囲でPASS。ユーザー本人の習熟度・実競馬性能は未認定。次はPhase 1の市場ベースライン検証。観測の承認条件と定期確認は維持する。
+
+## 2026-09-23 — Phase 1の残タスクを整理
+
+ユーザーの依頼に従い、計画書第4章・第24章と市場評価・日別報告・複数レース集計の実装を照合。docs/phase1-completion-audit.mdに完了済みの土台と6段階の残タスクを記録した。今できる報告・集計手順の準備と、公式出馬表公開後・開催当日の作業を区別した。
+
+既存aggregate_saved単体では全対象の網羅性と固定締切を証明しないため、4日分の日別台帳・締切検証結果との照合が必要。現行4日間の実験を完遂する場合の最終判定は10/4結果確認後だが、計画書自体が4日待機を必須とするわけではない。市場超過・利益・任意の最低標本数を追加条件にしない。
+
+文書のみの変更。新規データ取得、学習、設定・特徴量・指標・期間変更はなし。既存の全227テスト成功記録を参照し、今回はコードテストを再実行していない。Phase 1の完了宣言は行っていない。READMEに監査文書へのリンクを追加。

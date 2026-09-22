@@ -15,6 +15,7 @@ https://github.com/issa311sas-hub/shibata
 - [Phase 0の完了条件と残タスク](docs/phase0-completion-audit.md)
 - [Phase 0完了記録・検証結果](docs/phase0-completion.md)
 - [Phase 0最小演習ガイド](docs/phase0-learning-guide.md)
+- [Phase 1の完了条件と残タスク](docs/phase1-completion-audit.md)
 - [過去成績を使う参考実験](docs/retrospective-experiment.md)
 - [データ取得元の調査と受入れ確認事項](docs/data-sources.md)
 - [契約なしで実行できるオフライン処理](docs/offline-workflow.md)

@@ -5,41 +5,13 @@ import json
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 
 from .chronological import partition
 from .evaluation.compare import compare
 from .models import logistic, logistic_artifact, tree_rehearsal
 from .observed_features import FEATURES
+from .synthetic_jv import assemble
 from .ingestion.contracts import require
-
-
-def synthetic_raw():
-    """Fictional records; counts are derived per race during feature assembly."""
-    return [dict(race_id=day+'05010101', horse_id=f'{day}{h}', age=2+h,
-                 sex='1', bracket_number=h, horse_number=h, distance=1600,
-                 surface='turf', venue='05', carried_weight=55., win=int(h == 1))
-            for day in ('20260101', '20260201', '20260701') for h in range(1, 5)]
-
-
-def feature_frame(raw):
-    frame = pd.DataFrame(raw)
-    require('runner_count' not in frame and set(frame) ==
-            set(FEATURES)-{'runner_count'} | {'race_id', 'horse_id', 'win'},
-            'Unexpected synthetic raw columns')
-    frame['runner_count'] = frame.groupby('race_id').horse_id.transform('size')
-    return frame[['race_id', 'horse_id', *FEATURES, 'win']]
-
-
-def synthetic_market(validation):
-    market = validation[['race_id', 'horse_id']].copy()
-    market['start_at'] = pd.Timestamp('2026-07-01T12:00:00+09:00')
-    market['win_odds'] = [2., 4., 6., 8.]
-    market['popularity'] = [1, 2, 3, 4]
-    market['odds_rank'] = [1, 2, 3, 4]
-    inverse = 1/market.win_odds
-    market['market_probability'] = inverse/inverse.sum()
-    return market
 
 
 def run(config_path: Path, output: Path):
@@ -53,21 +25,23 @@ def run(config_path: Path, output: Path):
     status = dict(status='RUNNING', experiment_kind='phase2_synthetic_three_model_rehearsal',
                   real_data_used=False, test_evaluated=False, phase_promotion=False)
     try:
-        raw = synthetic_raw()
-        (output/'synthetic-raw.json').write_text(json.dumps(raw, indent=2), encoding='utf-8')
-        dataset = feature_frame(raw)
-        dataset.to_csv(output/'synthetic-features.csv', index=False)
+        dataset, labels, market = assemble(output/'synthetic-jv')
+        dataset.drop(columns='win').to_csv(output/'synthetic-features.csv', index=False)
+        labels.to_csv(output/'synthetic-labels.csv', index=False)
+        dataset.to_csv(output/'synthetic-dataset.csv', index=False)
         parts, coverage = partition(dataset, config)
         require(coverage['train']['races'] == 2 and coverage['validation']['races'] == 1 and
                 coverage['test']['rows'] == coverage['outside']['rows'] == 0,
                 'Unexpected rehearsal partition')
         train, validation = parts['train'], parts['validation']
-        market = synthetic_market(validation)
+        require(set(map(tuple, market[['race_id', 'horse_id']].to_numpy())) ==
+                set(map(tuple, validation[['race_id', 'horse_id']].to_numpy())),
+                'Synthetic market population differs from validation')
         results = validation[['race_id', 'horse_id', 'win']].copy()
         results['result_status'] = 'official'
         results['result_observed_at'] = '2026-07-01T13:00:00+09:00'
         config_sha = hashlib.sha256(raw_config).hexdigest()
-        dataset_sha = hashlib.sha256((output/'synthetic-features.csv').read_bytes()).hexdigest()
+        dataset_sha = hashlib.sha256((output/'synthetic-dataset.csv').read_bytes()).hexdigest()
         scores = {}
         for name in ('logistic_regression', *tree_rehearsal.MODELS):
             if name == 'logistic_regression':

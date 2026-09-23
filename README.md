@@ -19,6 +19,7 @@ https://github.com/issa311sas-hub/shibata
 - [Phase 1の全期間集計手順](docs/phase1-summary-operations.md)
 - [Phase 1の終了報告テンプレート](docs/phase1-report-template.md)
 - [Phase 2の合成データによる3モデル準備](docs/phase2-preparation.md)
+- [Phase 2の実データ入力受入条件](docs/phase2-data-contract.md)
 - [過去成績を使う参考実験](docs/retrospective-experiment.md)
 - [データ取得元の調査と受入れ確認事項](docs/data-sources.md)
 - [契約なしで実行できるオフライン処理](docs/offline-workflow.md)

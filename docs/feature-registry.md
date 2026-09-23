@@ -72,3 +72,5 @@ age / horse_number / runner_count / distance / carried_weightは学習データ�
 確定オッズと着順は上表に含めない。前者は事後の参考比較値、後者は教師ラベルのみ。参考実験結果はretrospective-experiment.mdに記載。入力変更の確認や正常順位による除外に結果情報を使用するため、厳密なLEAKAGE判定はPASSにしない。
 
 2026-09-23 Phase 0の追加確認: 演習用previous_win / previous_two_meanの式は変更せず、元演習とは別の2025-04〜06の架空3頭4レースで、手指定の期待値と4つの現在/未来改変境界を検査する。これは環境・基本操作の受入確認で、本番特徴量として採用しない。実競馬の9特徴量・期間・利用時点条件には変更なし。教材はphase0-learning-guide.md、受入記録はphase0-completion.mdに集約する。
+
+2026-09-23 Phase 2の事前演習: 上記の承認済み9特徴量をLightGBM/CatBoostにも同一の列・前処理で接続した。合成3レースのみ使用し、実データでの有効性、当時の利用可能性、欠損率、採用判断は更新しない。演習記録はphase2-preparation.md。

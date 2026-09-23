@@ -12,6 +12,7 @@ https://github.com/issa311sas-hub/shibata
 - [開発記録](docs/progress.md)
 - [実験記録テンプレート](docs/experiment-template.md)
 - [環境構築・演習の実行手順](docs/setup.md)
+- [デスクトップPCへの引き継ぎ・新PCのCodexへの依頼文](docs/desktop-handoff.md)
 - [Phase 0の完了条件と残タスク](docs/phase0-completion-audit.md)
 - [Phase 0完了記録・検証結果](docs/phase0-completion.md)
 - [Phase 0最小演習ガイド](docs/phase0-learning-guide.md)

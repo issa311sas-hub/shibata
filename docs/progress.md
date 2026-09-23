@@ -471,3 +471,11 @@ JRAの9/26・27競馬番組ページを確認。ページ自身がこれを予�
 docs/phase2-data-contract.mdに実データの時点・原本・結果・市場比較の受入条件を記録。Phase 1の4観測日は承認済み初期Train/Validation/Test期間の外であり、当初分割を埋めるデータとはしない。既存の事後復元参考実験にも当時利用可能性の証拠はない。正式実験で使うデータと条件の確定は未了、Phase 2昇格なし。
 
 追加接続後の全回帰テストは247件成功（70.93秒）。ローカル証拠: outputs/phase2-jv-full-tests-v1/pytest.xml。
+
+## 2026-09-23 — Phase 3以降の台帳・時点検査を先行準備
+
+ユーザーの指示でPhase 3の台帳照合、Phase 4〜7に共通する過去情報の時点選別、Phase 8〜12の入力時刻設計を進めた。registry_audit.pyは承認済み9項目と13列を既存コード・設定と照合し、台帳・設定ハッシュを出す。実行phase3-registry-audit-v1はPASS。temporal_inputs.pyはレース前かつ締切までに利用可能だった過去結果だけを選び、除外理由を保持。スナップショットはT-10締切後のT-5を拒否する。架空15テスト成功（outputs/phase3-temporal-tests-v1/pytest.xml）。
+
+変更は共通の時点検査と文書化に限定。新しい特徴量やモデルへの入力追加、Rating・展開・オッズ時系列モデルの学習はなし。特徴量定義・期間・指標・Phase 1観測条件は不変。LEAKAGEの実データ判定およびPhase 3以降の昇格なし。
+
+全回帰テスト262件成功（93.77秒）。ローカル証拠: outputs/phase3-full-tests-v1/pytest.xml。共通時点検査のsource_sha256は形式チェックであり、原本内容との突合は別工程。
